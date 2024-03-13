@@ -2,9 +2,9 @@ package com.wind.service;
 
 import com.wind.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.wind.model.vo.UserVO;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 /**
  * 用户服务
@@ -14,12 +14,13 @@ import java.util.List;
 public interface UserService extends IService<User> {
     /**
      * 用户登录
+     *
      * @param userAccount
      * @param userPassword
      * @param request
      * @return
      */
-    User userLogin(String userAccount, String userPassword, HttpServletRequest request);
+    UserVO userLogin(String userAccount, String userPassword, HttpServletRequest request);
 
     /**
      * 用户注册
@@ -40,10 +41,11 @@ public interface UserService extends IService<User> {
 
     /**
      * 用户脱敏
+     *
      * @param originUser
      * @return
      */
-    User getSafetyUser(User originUser);
+    UserVO getSafetyUser(User originUser);
 
     /**
      * 用户鉴权

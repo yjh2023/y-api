@@ -8,12 +8,14 @@ import com.wind.exception.BusinessException;
 import com.wind.model.domain.User;
 import com.wind.model.request.UserLoginRequest;
 import com.wind.model.request.UserRegisterRequest;
+import com.wind.model.vo.UserVO;
 import com.wind.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
 
 import static com.wind.constant.UserConstant.USER_LOGIN_STATE;
 
@@ -36,7 +38,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/login")
-    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request){
+    public BaseResponse<UserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request){
         if(userLoginRequest == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -45,11 +47,11 @@ public class UserController {
         if(StringUtils.isAnyBlank(userAccount,userPassword)){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User user = userService.userLogin (userAccount, userPassword, request);
-        if(user == null){
+        UserVO userVO = userService.userLogin (userAccount, userPassword, request);
+        if(userVO == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        return ResultUtils.success(user);
+        return ResultUtils.success(userVO);
     }
 
     /**
@@ -95,19 +97,19 @@ public class UserController {
      * @return
      */
     @GetMapping("/current")
-    public BaseResponse<User> getCurrentUser(HttpServletRequest request){
+    public BaseResponse<UserVO> getCurrentUser(HttpServletRequest request){
         if(request == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User currentUser = (User) userObj;
+        UserVO currentUser = (UserVO) userObj;
         if(currentUser == null){
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
         Long userId = currentUser.getId();
         User user = userService.getById(userId);
-        User safetyUser = userService.getSafetyUser(user);
-        return ResultUtils.success(safetyUser);
+        UserVO userVO = userService.getSafetyUser(user);
+        return ResultUtils.success(userVO);
     }
 
     /**
@@ -126,7 +128,7 @@ public class UserController {
         if (id == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User currentUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+        UserVO currentUser = (UserVO) request.getSession().getAttribute(USER_LOGIN_STATE);
         Long userId = currentUser.getId();
         if(userId == id){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);

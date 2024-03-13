@@ -1,18 +1,24 @@
 package com.wind.service.impl;
 
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.crypto.digest.DigestUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wind.common.ErrorCode;
 import com.wind.exception.BusinessException;
 import com.wind.mapper.UserMapper;
 import com.wind.model.domain.User;
+import com.wind.model.vo.UserVO;
 import com.wind.service.UserService;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,13 +43,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 用户登录
+     *
      * @param userAccount
      * @param userPassword
      * @param request
      * @return
      */
     @Override
-    public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
+    public UserVO userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         if(StringUtils.isAnyBlank(userAccount,userPassword)){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -65,11 +72,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("userAccount", userAccount);
         queryWrapper.eq("userPassword", encryptPassword);
         User user = userMapper.selectOne(queryWrapper);
-        if(user == null){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
         //用户脱敏
-        User safetyUser = getSafetyUser(user);
+        UserVO safetyUser = getSafetyUser(user);
         //记录用户的登录态
         request.getSession().setAttribute(USER_LOGIN_STATE,safetyUser);
         return safetyUser;
@@ -110,11 +114,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
-        //密码加密
+        // 密码加密
         User user = new User();
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+        // 分配 accessKey, secretKey
+        String accessKey = DigestUtil.md5Hex(SALT + userAccount + RandomUtil.randomNumbers(5));
+        String secretKey = DigestUtil.md5Hex(SALT + userAccount + RandomUtil.randomNumbers(8));
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
+        user.setAccessKey(accessKey);
+        user.setSecretKey(secretKey);
         this.save(user);
 
         return user.getId();
@@ -135,23 +144,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 用户脱敏
-     * @param originUser
+     *
+     * @param user
      * @return
      */
     @Override
-    public User getSafetyUser(User originUser) {
-        if(originUser == null){
+    public UserVO getSafetyUser(User user) {
+        if(user == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User safetyUser = new User();
-        safetyUser.setId(originUser.getId());
-        safetyUser.setUserName(originUser.getUserName());
-        safetyUser.setUserAccount(originUser.getUserAccount());
-        safetyUser.setUserAvatar(originUser.getUserAvatar());
-        safetyUser.setGender(originUser.getGender());
-        safetyUser.setUserRole(originUser.getUserRole());
-        safetyUser.setCreateTime(originUser.getCreateTime());
-        return safetyUser;
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+        return userVO;
     }
 
     /**
@@ -162,8 +166,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public boolean isAdmin(HttpServletRequest request){
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User currentUser = (User) userObj;
-        return currentUser != null && currentUser.getUserRole() == ADMIN_ROLE;
+        UserVO currentUser = (UserVO) userObj;
+        return currentUser != null && ADMIN_ROLE.equals(currentUser.getUserRole());
     }
 }
 
