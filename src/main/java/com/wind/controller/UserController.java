@@ -1,6 +1,7 @@
 package com.wind.controller;
 
 import com.wind.common.BaseResponse;
+import com.wind.common.DeleteRequest;
 import com.wind.common.ErrorCode;
 import com.wind.common.ResultUtils;
 import com.wind.exception.BusinessException;
@@ -111,12 +112,13 @@ public class UserController {
 
     /**
      * 删除用户
-     * @param id
+     * @param deleteRequest
      * @param request
      * @return
      */
     @PostMapping("delete")
-    public BaseResponse<Boolean> userDelete(Long id, HttpServletRequest request){
+    public BaseResponse<Boolean> userDelete(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request){
+        Long id = deleteRequest.getId();
         boolean isAdmin = userService.isAdmin(request);
         if(!isAdmin){
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
