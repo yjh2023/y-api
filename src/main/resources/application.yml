@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: yapi-backend
+  # DataSource Config
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/yapi
+    username: root
+    password: root
+  # session 失效时间
+  session:
+    timeout: 86400
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+  global-config:
+    db-config:
+      logic-delete-field: isDelete # 指定逻辑删除的字段
+      logic-delete-value: 1 # 值为1时逻辑删除
+      logic-not-delete-value: 0 # 值为0时未逻辑删除
