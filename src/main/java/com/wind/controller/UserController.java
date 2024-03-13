@@ -1,5 +1,9 @@
 package com.wind.controller;
 
+import com.wind.common.BaseResponse;
+import com.wind.common.ErrorCode;
+import com.wind.common.ResultUtils;
+import com.wind.exception.BusinessException;
 import com.wind.model.domain.User;
 import com.wind.model.request.UserLoginRequest;
 import com.wind.model.request.UserRegisterRequest;
@@ -9,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 import static com.wind.constant.UserConstant.USER_LOGIN_STATE;
 
@@ -32,20 +35,20 @@ public class UserController {
      * @return
      */
     @PostMapping("/login")
-    public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request){
+    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request){
         if(userLoginRequest == null){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
         if(StringUtils.isAnyBlank(userAccount,userPassword)){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User user = userService.userLogin (userAccount, userPassword, request);
         if(user == null){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        return user;
+        return ResultUtils.success(user);
     }
 
     /**
@@ -54,21 +57,21 @@ public class UserController {
      * @return
      */
     @PostMapping("/register")
-    public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest){
+    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest){
         if(userRegisterRequest == null){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
         if(StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         long id = userService.userRegister(userAccount, userPassword, checkPassword);
         if(id == -1){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        return id;
+        return ResultUtils.success(id);
     }
 
     /**
@@ -77,13 +80,12 @@ public class UserController {
      * @return
      */
     @PostMapping("/logout")
-    public Boolean userLogout(HttpServletRequest request){
+    public BaseResponse<Boolean> userLogout(HttpServletRequest request){
         if(request == null){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        //
         boolean result = userService.userLogout(request);
-        return result;
+        return ResultUtils.success(result);
     }
 
     /**
@@ -92,19 +94,19 @@ public class UserController {
      * @return
      */
     @GetMapping("/current")
-    public User getCurrentUser(HttpServletRequest request){
+    public BaseResponse<User> getCurrentUser(HttpServletRequest request){
         if(request == null){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         User currentUser = (User) userObj;
         if(currentUser == null){
-            return null;
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
         Long userId = currentUser.getId();
         User user = userService.getById(userId);
         User safetyUser = userService.getSafetyUser(user);
-        return safetyUser;
+        return ResultUtils.success(safetyUser);
     }
 
     /**
@@ -114,21 +116,22 @@ public class UserController {
      * @return
      */
     @PostMapping("delete")
-    public Boolean userDelete(Long id, HttpServletRequest request){
+    public BaseResponse<Boolean> userDelete(Long id, HttpServletRequest request){
         boolean isAdmin = userService.isAdmin(request);
         if(!isAdmin){
-            return null;
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         if (id == null){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User currentUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
         Long userId = currentUser.getId();
         if(userId == id){
-           return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         boolean result = userService.removeById(id);
-        return result;
+        return ResultUtils.success(result);
     }
+
 
 }

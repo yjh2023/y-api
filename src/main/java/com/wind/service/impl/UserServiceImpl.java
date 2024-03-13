@@ -2,6 +2,8 @@ package com.wind.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wind.common.ErrorCode;
+import com.wind.exception.BusinessException;
 import com.wind.mapper.UserMapper;
 import com.wind.model.domain.User;
 import com.wind.service.UserService;
@@ -11,10 +13,8 @@ import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.wind.constant.UserConstant.ADMIN_ROLE;
 import static com.wind.constant.UserConstant.USER_LOGIN_STATE;
@@ -45,19 +45,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         if(StringUtils.isAnyBlank(userAccount,userPassword)){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         if(userAccount.length() < 4){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         if(userPassword.length() < 8){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         //账号不能包含特殊字符、
         String vaildPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
         Matcher matcher = Pattern.compile(vaildPattern).matcher(userAccount);
         if(matcher.find()){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         //加密
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
@@ -66,7 +66,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("userPassword", encryptPassword);
         User user = userMapper.selectOne(queryWrapper);
         if(user == null){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         //用户脱敏
         User safetyUser = getSafetyUser(user);
@@ -86,28 +86,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
         if(StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         if(userAccount.length() < 4){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         if(userPassword.length() < 8 || checkPassword.length() < 8){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         if(!userPassword.equals(checkPassword)){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
         Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
         if(matcher.find()){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         //验证账号重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", userAccount);
         Long count = userMapper.selectCount(queryWrapper);
         if(count > 0){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
         //密码加密
@@ -133,10 +133,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return true;
     }
 
+    /**
+     * 用户脱敏
+     * @param originUser
+     * @return
+     */
     @Override
     public User getSafetyUser(User originUser) {
         if(originUser == null){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User safetyUser = new User();
         safetyUser.setId(originUser.getId());
