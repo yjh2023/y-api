@@ -8,9 +8,9 @@ import com.wind.common.ErrorCode;
 import com.wind.exception.BusinessException;
 import com.wind.mapper.UserMapper;
 import com.wind.model.domain.User;
+import com.wind.model.request.UserUpdateRequest;
 import com.wind.model.vo.UserVO;
 import com.wind.service.UserService;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -18,9 +18,10 @@ import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Random;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.wind.constant.UserConstant.ADMIN_ROLE;
 import static com.wind.constant.UserConstant.USER_LOGIN_STATE;
@@ -168,6 +169,44 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         UserVO currentUser = (UserVO) userObj;
         return currentUser != null && ADMIN_ROLE.equals(currentUser.getUserRole());
+    }
+
+    /**
+     * 批量查询用户
+     * @param userQuery
+     * @return
+     */
+    @Override
+    public List<UserVO> listUser(User userQuery) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>(userQuery);
+        List<User> userList = userMapper.selectList(queryWrapper);
+        return userList.stream().map(user -> {
+            UserVO userVO = new UserVO();
+            BeanUtils.copyProperties(user, userVO);
+            return userVO;
+        }).collect(Collectors.toList());
+    }
+    /**
+     * 修改用户
+     * @param userUpdateRequest
+     * @param request
+     * @return
+     */
+    @Override
+    public int updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
+        boolean isAdmin = this.isAdmin(request);
+        UserVO loginUser = (UserVO) request.getSession().getAttribute(USER_LOGIN_STATE);
+        if(loginUser == null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        long loginUserId = loginUser.getId();
+        // 非管理员只能修改自己的用户信息，且不能修改权限
+        if(!isAdmin && ((loginUserId != userUpdateRequest.getId()) || ADMIN_ROLE.equals(userUpdateRequest.getUserRole()))){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        User user = new User();
+        BeanUtils.copyProperties(userUpdateRequest, user);
+        return userMapper.updateById(user);
     }
 }
 

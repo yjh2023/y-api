@@ -25,3 +25,6 @@ mybatis-plus:
       logic-delete-field: isDelete # 指定逻辑删除的字段
       logic-delete-value: 1 # 值为1时逻辑删除
       logic-not-delete-value: 0 # 值为0时未逻辑删除
+logging:
+  level:
+    com.wind.mapper: debug

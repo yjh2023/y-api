@@ -7,15 +7,18 @@ import com.wind.common.ResultUtils;
 import com.wind.exception.BusinessException;
 import com.wind.model.domain.User;
 import com.wind.model.request.UserLoginRequest;
+import com.wind.model.request.UserQueryRequest;
 import com.wind.model.request.UserRegisterRequest;
+import com.wind.model.request.UserUpdateRequest;
 import com.wind.model.vo.UserVO;
 import com.wind.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-
+import java.util.List;
 
 import static com.wind.constant.UserConstant.USER_LOGIN_STATE;
 
@@ -135,6 +138,60 @@ public class UserController {
         }
         boolean result = userService.removeById(id);
         return ResultUtils.success(result);
+    }
+    /**
+     * 修改用户
+     *
+     * @param userUpdateRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/update")
+    public BaseResponse<Integer> updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
+        if (userUpdateRequest == null || userUpdateRequest.getId() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        int result = userService.updateUser(userUpdateRequest, request);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 根据 id 获取用户
+     *
+     * @param id
+     * @param request
+     * @return
+     */
+    @GetMapping("/get")
+    public BaseResponse<UserVO> getUserById(int id, HttpServletRequest request) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userService.getById(id);
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+        return ResultUtils.success(userVO);
+    }
+
+    /**
+     * 获取用户列表
+     *
+     * @param userQueryRequest
+     * @param request
+     * @return
+     */
+    @GetMapping("/list")
+    public BaseResponse<List<UserVO>> listUser(UserQueryRequest userQueryRequest, HttpServletRequest request) {
+        boolean isAdmin = userService.isAdmin(request);
+        if(!isAdmin){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        User userQuery = new User();
+        if (userQueryRequest != null) {
+            BeanUtils.copyProperties(userQueryRequest, userQuery);
+        }
+        List<UserVO> userVOList = userService.listUser(userQuery);
+        return ResultUtils.success(userVOList);
     }
 
 

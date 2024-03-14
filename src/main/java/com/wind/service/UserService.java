@@ -2,9 +2,11 @@ package com.wind.service;
 
 import com.wind.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.wind.model.request.UserUpdateRequest;
 import com.wind.model.vo.UserVO;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 用户服务
@@ -53,4 +55,19 @@ public interface UserService extends IService<User> {
      * @return
      */
     boolean isAdmin(HttpServletRequest request);
+
+    /**
+     * 批量查询用户
+     * @param user
+     * @return
+     */
+    List<UserVO> listUser(User user);
+
+    /**
+     * 修改用户
+     * @param userUpdateRequest
+     * @param request
+     * @return
+     */
+    int updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request);
 }
