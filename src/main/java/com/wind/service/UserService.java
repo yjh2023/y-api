@@ -70,4 +70,12 @@ public interface UserService extends IService<User> {
      * @return
      */
     int updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request);
+
+    /**
+     * 获取登录用户
+     *
+     * @param request
+     * @return
+     */
+    UserVO getLoginUser(HttpServletRequest request);
 }

@@ -144,6 +144,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     /**
+     * 获取登录用户
+     *
+     * @param request
+     * @return
+     */
+    @Override
+    public UserVO getLoginUser(HttpServletRequest request){
+        UserVO loginUser = (UserVO) request.getSession().getAttribute(USER_LOGIN_STATE);
+        if(loginUser == null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        return loginUser;
+    }
+
+    /**
      * 用户脱敏
      *
      * @param user

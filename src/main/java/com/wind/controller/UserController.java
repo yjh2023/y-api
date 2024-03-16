@@ -104,14 +104,10 @@ public class UserController {
         if(request == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        UserVO currentUser = (UserVO) userObj;
-        if(currentUser == null){
+        UserVO userVO = userService.getLoginUser(request);
+        if(userVO == null){
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
-        Long userId = currentUser.getId();
-        User user = userService.getById(userId);
-        UserVO userVO = userService.getSafetyUser(user);
         return ResultUtils.success(userVO);
     }
 
@@ -131,8 +127,8 @@ public class UserController {
         if (id == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        UserVO currentUser = (UserVO) request.getSession().getAttribute(USER_LOGIN_STATE);
-        Long userId = currentUser.getId();
+        UserVO loginUser = userService.getLoginUser(request);
+        long userId = loginUser.getId();
         if(userId == id){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
