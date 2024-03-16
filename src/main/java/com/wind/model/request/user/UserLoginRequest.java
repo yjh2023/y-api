@@ -1,16 +1,16 @@
-package com.wind.model.request;
+package com.wind.model.request.user;
 
 import lombok.Data;
 
 import java.io.Serializable;
 
 /**
- * 用户注册请求
+ * 用户登录请求
  *
  * @author wind
  */
 @Data
-public class UserRegisterRequest implements Serializable {
+public class UserLoginRequest implements Serializable {
 
     /**
      * 账号
@@ -22,11 +22,5 @@ public class UserRegisterRequest implements Serializable {
      */
     private String userPassword;
 
-    /**
-     * 确认密码
-     */
-    private String checkPassword;
-
     private static final long serialVersionUID = 1L;
-
 }

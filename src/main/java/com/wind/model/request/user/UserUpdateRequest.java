@@ -1,4 +1,4 @@
-package com.wind.model.request;
+package com.wind.model.request.user;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;

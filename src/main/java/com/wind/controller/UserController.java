@@ -6,10 +6,10 @@ import com.wind.common.ErrorCode;
 import com.wind.common.ResultUtils;
 import com.wind.exception.BusinessException;
 import com.wind.model.domain.User;
-import com.wind.model.request.UserLoginRequest;
-import com.wind.model.request.UserQueryRequest;
-import com.wind.model.request.UserRegisterRequest;
-import com.wind.model.request.UserUpdateRequest;
+import com.wind.model.request.user.UserLoginRequest;
+import com.wind.model.request.user.UserQueryRequest;
+import com.wind.model.request.user.UserRegisterRequest;
+import com.wind.model.request.user.UserUpdateRequest;
 import com.wind.model.vo.UserVO;
 import com.wind.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-
-import static com.wind.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * 用户接口

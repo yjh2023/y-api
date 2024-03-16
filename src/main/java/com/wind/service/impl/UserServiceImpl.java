@@ -8,7 +8,7 @@ import com.wind.common.ErrorCode;
 import com.wind.exception.BusinessException;
 import com.wind.mapper.UserMapper;
 import com.wind.model.domain.User;
-import com.wind.model.request.UserUpdateRequest;
+import com.wind.model.request.user.UserUpdateRequest;
 import com.wind.model.vo.UserVO;
 import com.wind.service.UserService;
 import org.apache.commons.lang3.StringUtils;

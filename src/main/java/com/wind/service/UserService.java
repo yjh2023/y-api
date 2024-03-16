@@ -2,7 +2,7 @@ package com.wind.service;
 
 import com.wind.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.wind.model.request.UserUpdateRequest;
+import com.wind.model.request.user.UserUpdateRequest;
 import com.wind.model.vo.UserVO;
 
 import javax.servlet.http.HttpServletRequest;
