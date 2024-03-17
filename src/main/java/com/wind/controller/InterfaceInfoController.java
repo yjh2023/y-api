@@ -8,6 +8,7 @@ import com.wind.common.ErrorCode;
 import com.wind.common.ResultUtils;
 import com.wind.exception.BusinessException;
 import com.wind.model.domain.InterfaceInfo;
+import com.wind.model.enums.InterfaceInfoStatusEnum;
 import com.wind.model.request.interfaceInfo.InterfaceInfoAddRequest;
 import com.wind.model.request.interfaceInfo.InterfaceInfoQueryRequest;
 import com.wind.model.request.interfaceInfo.InterfaceInfoUpdateRequest;
@@ -188,5 +189,64 @@ public class InterfaceInfoController {
         queryWrapper.like(StringUtils.isNotBlank(description),"description",description);
         Page<InterfaceInfo> pageInterfaceInfo = interfaceInfoService.page(new Page<>(current, pageSize), queryWrapper);
         return ResultUtils.success(pageInterfaceInfo);
+    }
+
+    /**
+     * 发布接口
+     *
+     * @param id
+     * @param httpServletRequest
+     * @return
+     */
+    @PostMapping("/online")
+    public BaseResponse<Boolean> onlineInterface(Long id,HttpServletRequest httpServletRequest){
+        if(id == null || id <= 0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
+        if(interfaceInfo == null){
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        UserVO loginUser = userService.getLoginUser(httpServletRequest);
+        if(loginUser == null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        // todo 判断是否可以调用
+        boolean isAdmin = userService.isAdmin(httpServletRequest);
+        if(!isAdmin && !loginUser.getId().equals(interfaceInfo.getUserId())){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        interfaceInfo.setStatus(InterfaceInfoStatusEnum.ONLINE.getValue());
+        boolean result = interfaceInfoService.updateById(interfaceInfo);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 下线接口
+     *
+     * @param id
+     * @param httpServletRequest
+     * @return
+     */
+    @PostMapping("/offline")
+    public BaseResponse<Boolean> offlineInterface(Long id,HttpServletRequest httpServletRequest){
+        if(id == null || id <= 0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
+        if(interfaceInfo == null){
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        UserVO loginUser = userService.getLoginUser(httpServletRequest);
+        if(loginUser == null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        boolean isAdmin = userService.isAdmin(httpServletRequest);
+        if(!isAdmin && !loginUser.getId().equals(interfaceInfo.getUserId())){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        interfaceInfo.setStatus(InterfaceInfoStatusEnum.OFFLINE.getValue());
+        boolean result = interfaceInfoService.updateById(interfaceInfo);
+        return ResultUtils.success(result);
     }
 }
