@@ -1,6 +1,7 @@
 package com.wind.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wind.common.BaseResponse;
 import com.wind.common.DeleteRequest;
 import com.wind.common.ErrorCode;
@@ -13,6 +14,7 @@ import com.wind.model.request.interfaceInfo.InterfaceInfoUpdateRequest;
 import com.wind.model.vo.UserVO;
 import com.wind.service.InterfaceInfoService;
 import com.wind.service.UserService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -158,5 +160,33 @@ public class InterfaceInfoController {
         QueryWrapper<InterfaceInfo> queryWrapper = new QueryWrapper<>(interfaceInfoQuery);
         List<InterfaceInfo> list = interfaceInfoService.list(queryWrapper);
         return ResultUtils.success(list);
+    }
+
+    /**
+     * 分页查询接口信息
+     *
+     * @param interfaceInfoQueryRequest
+     * @return
+     */
+    @GetMapping("/list/page")
+    public BaseResponse<Page<InterfaceInfo>> pageInterfaceInfo(InterfaceInfoQueryRequest interfaceInfoQueryRequest){
+        if(interfaceInfoQueryRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long current = interfaceInfoQueryRequest.getCurrrent();
+        long pageSize = interfaceInfoQueryRequest.getPageSize();
+        String description = interfaceInfoQueryRequest.getDescription();
+        // 限制爬虫
+        if(pageSize > 20){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        InterfaceInfo interfaceInfoQuery = new InterfaceInfo();
+        BeanUtils.copyProperties(interfaceInfoQueryRequest,interfaceInfoQuery);
+        // 支持 description 模糊搜索
+        interfaceInfoQuery.setDescription(null);
+        QueryWrapper<InterfaceInfo> queryWrapper = new QueryWrapper<>(interfaceInfoQuery);
+        queryWrapper.like(StringUtils.isNotBlank(description),"description",description);
+        Page<InterfaceInfo> pageInterfaceInfo = interfaceInfoService.page(new Page<>(current, pageSize), queryWrapper);
+        return ResultUtils.success(pageInterfaceInfo);
     }
 }

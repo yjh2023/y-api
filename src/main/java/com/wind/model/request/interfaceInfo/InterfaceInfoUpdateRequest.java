@@ -2,13 +2,15 @@ package com.wind.model.request.interfaceInfo;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * 接口信息修改请求
  *
  * @author wind
  */
 @Data
-public class InterfaceInfoUpdateRequest {
+public class InterfaceInfoUpdateRequest implements Serializable {
 
     /**
      * 主键
@@ -54,5 +56,7 @@ public class InterfaceInfoUpdateRequest {
      * 请求类型
      */
     private String method;
+
+    private static final long serialVersionUID = 1L;
 
 }

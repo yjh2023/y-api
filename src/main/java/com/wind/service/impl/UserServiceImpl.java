@@ -3,6 +3,7 @@ package com.wind.service.impl;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wind.common.ErrorCode;
 import com.wind.exception.BusinessException;
@@ -141,6 +142,27 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //移除登录态
         request.getSession().removeAttribute(USER_LOGIN_STATE);
         return true;
+    }
+
+    /**
+     * 分页获取用户
+     *
+     * @param current
+     * @param pageSize
+     * @param userQuery
+     * @return
+     */
+    @Override
+    public Page<UserVO> getPageUserVO(long current, long pageSize, User userQuery) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>(userQuery);
+        Page<User> pageUser = userMapper.selectPage(new Page<>(current, pageSize), queryWrapper);
+        Page<UserVO> pageUserVO = new Page<>(current,pageSize,pageUser.getTotal());
+        List<UserVO> userVOList = pageUser.getRecords().stream().map(user -> {
+            UserVO userVO = this.getSafetyUser(user);
+            return userVO;
+        }).collect(Collectors.toList());
+        pageUserVO.setRecords(userVOList);
+        return pageUserVO;
     }
 
     /**

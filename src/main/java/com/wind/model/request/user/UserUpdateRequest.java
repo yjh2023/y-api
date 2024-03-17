@@ -47,6 +47,5 @@ public class UserUpdateRequest implements Serializable {
      */
     private String userPassword;
 
-    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

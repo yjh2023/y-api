@@ -1,5 +1,6 @@
 package com.wind.model.request.user;
 
+import com.wind.common.PageRequest;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -10,7 +11,7 @@ import java.io.Serializable;
  * @author wind
  */
 @Data
-public class UserQueryRequest implements Serializable {
+public class UserQueryRequest extends PageRequest implements Serializable {
 
     /**
      * 用户昵称

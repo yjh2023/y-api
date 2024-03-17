@@ -1,6 +1,9 @@
 package com.wind.model.request.interfaceInfo;
 
+import com.wind.common.PageRequest;
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * 接口信息查询请求
@@ -8,7 +11,7 @@ import lombok.Data;
  * @author wind
  */
 @Data
-public class InterfaceInfoQueryRequest {
+public class InterfaceInfoQueryRequest extends PageRequest implements Serializable {
 
     /**
      * 主键
@@ -54,5 +57,7 @@ public class InterfaceInfoQueryRequest {
      * 请求类型
      */
     private String method;
+
+    private static final long serialVersionUID = 1L;
 
 }

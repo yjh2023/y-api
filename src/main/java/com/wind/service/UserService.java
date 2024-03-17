@@ -1,5 +1,6 @@
 package com.wind.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wind.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wind.model.request.user.UserUpdateRequest;
@@ -70,6 +71,8 @@ public interface UserService extends IService<User> {
      * @return
      */
     int updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request);
+
+    Page<UserVO> getPageUserVO(long current, long pageSize, User userQuery);
 
     /**
      * 获取登录用户

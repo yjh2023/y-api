@@ -1,5 +1,6 @@
 package com.wind.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wind.common.BaseResponse;
 import com.wind.common.DeleteRequest;
 import com.wind.common.ErrorCode;
@@ -186,6 +187,30 @@ public class UserController {
         }
         List<UserVO> userVOList = userService.listUser(userQuery);
         return ResultUtils.success(userVOList);
+    }
+
+    /**
+     * 分页获取用户信息
+     *
+     * @param userQueryRequest
+     * @param request
+     * @return
+     */
+    @GetMapping("/list/page")
+    public BaseResponse<Page<UserVO>> pageUserVO(UserQueryRequest userQueryRequest,HttpServletRequest request){
+        boolean isAdmin = userService.isAdmin(request);
+        if(!isAdmin){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        if(userQueryRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long current  = userQueryRequest.getCurrrent();
+        long pageSize = userQueryRequest.getPageSize();
+        User userQuery = new User();
+        BeanUtils.copyProperties(userQueryRequest,userQuery);
+        Page<UserVO> pageUserVO = userService.getPageUserVO(current, pageSize, userQuery);
+        return ResultUtils.success(pageUserVO);
     }
 
 
