@@ -8,6 +8,7 @@ import com.wind.common.ErrorCode;
 import com.wind.common.ResultUtils;
 import com.wind.exception.BusinessException;
 import com.wind.model.domain.InterfaceInfo;
+import com.wind.model.domain.User;
 import com.wind.model.enums.InterfaceInfoStatusEnum;
 import com.wind.model.request.interfaceInfo.InterfaceInfoAddRequest;
 import com.wind.model.request.interfaceInfo.InterfaceInfoQueryRequest;
@@ -15,6 +16,8 @@ import com.wind.model.request.interfaceInfo.InterfaceInfoUpdateRequest;
 import com.wind.model.vo.UserVO;
 import com.wind.service.InterfaceInfoService;
 import com.wind.service.UserService;
+import com.wind.yapiclientsdk.client.YapiClient;
+import com.wind.yapiclientsdk.model.TestUser;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -248,5 +251,36 @@ public class InterfaceInfoController {
         interfaceInfo.setStatus(InterfaceInfoStatusEnum.OFFLINE.getValue());
         boolean result = interfaceInfoService.updateById(interfaceInfo);
         return ResultUtils.success(result);
+    }
+
+    /**
+     * 测试调用
+     *
+     * @param id
+     * @param httpServletRequest
+     * @return
+     */
+    @PostMapping("invoke")
+    public BaseResponse<Object> invokeInterface(Long id,HttpServletRequest httpServletRequest){
+        if(id == null || id <= 0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
+        if(interfaceInfo == null){
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        if(interfaceInfo.getStatus() == InterfaceInfoStatusEnum.OFFLINE.getValue()){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"接口已关闭");
+        }
+        UserVO loginUser = userService.getLoginUser(httpServletRequest);
+        User user = userService.getById(loginUser.getId());
+        String accessKey = user.getAccessKey();
+        String secretKey = user.getSecretKey();
+        YapiClient yapiClient = new YapiClient(accessKey,secretKey);
+        TestUser testUser = new TestUser();
+        testUser.setUsername("wind");
+        String result = yapiClient.getUsernameByPost(testUser);
+        return ResultUtils.success(result);
+
     }
 }
