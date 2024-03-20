@@ -28,3 +28,13 @@ mybatis-plus:
 logging:
   level:
     com.wind.mapper: debug
+
+dubbo:
+  application:
+    name: dubbo-springboot-provider
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    id: nacos-registry
+    address: nacos://localhost:8848

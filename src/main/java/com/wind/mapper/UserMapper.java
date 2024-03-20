@@ -1,7 +1,7 @@
 package com.wind.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.wind.model.domain.User;
+import com.wind.yapicommon.model.domain.User;
 
 /**
  * 用户 Mapper

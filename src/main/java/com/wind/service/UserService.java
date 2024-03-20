@@ -1,10 +1,10 @@
 package com.wind.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.wind.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wind.model.request.user.UserUpdateRequest;
 import com.wind.model.vo.UserVO;
+import com.wind.yapicommon.model.domain.User;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;

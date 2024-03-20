@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wind.common.ErrorCode;
 import com.wind.exception.BusinessException;
 import com.wind.mapper.InterfaceInfoMapper;
-import com.wind.model.domain.InterfaceInfo;
 import com.wind.service.InterfaceInfoService;
+import com.wind.yapicommon.model.domain.InterfaceInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 

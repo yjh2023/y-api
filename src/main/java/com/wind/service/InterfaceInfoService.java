@@ -1,7 +1,7 @@
 package com.wind.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.wind.model.domain.InterfaceInfo;
+import com.wind.yapicommon.model.domain.InterfaceInfo;
 
 /**
  *  接口服务

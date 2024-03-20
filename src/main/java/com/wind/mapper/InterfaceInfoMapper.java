@@ -1,7 +1,7 @@
 package com.wind.mapper;
 
-import com.wind.model.domain.InterfaceInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.wind.yapicommon.model.domain.InterfaceInfo;
 
 /**
  * @Entity com.wind.model.domain.InterfaceInfo

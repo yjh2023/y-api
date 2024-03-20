@@ -8,15 +8,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wind.common.ErrorCode;
 import com.wind.exception.BusinessException;
 import com.wind.mapper.UserMapper;
-import com.wind.model.domain.User;
 import com.wind.model.request.user.UserUpdateRequest;
 import com.wind.model.vo.UserVO;
 import com.wind.service.UserService;
+import com.wind.yapicommon.model.domain.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
-
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
