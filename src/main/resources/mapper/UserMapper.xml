@@ -14,6 +14,7 @@
             <result property="userPassword" column="userPassword" jdbcType="VARCHAR"/>
             <result property="accessKey" column="accessKey" jdbcType="VARCHAR"/>
             <result property="secretKey" column="secretKey" jdbcType="VARCHAR"/>
+            <result property="balance" column="balance" jdbcType="BIGINT"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
             <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
@@ -23,6 +24,7 @@
         id,userName,userAccount,
         userAvatar,gender,userRole,
         userPassword,accessKey,secretKey,
-        createTime,updateTime,isDelete
+        balance,createTime,updateTime,
+        isDelete
     </sql>
 </mapper>

@@ -60,6 +60,11 @@ public class User implements Serializable {
     private String secretKey;
 
     /**
+     * 余额（注册送100个币）
+     */
+    private Long balance;
+
+    /**
      * 创建时间
      */
     private Date createTime;

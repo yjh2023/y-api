@@ -57,6 +57,11 @@ public class InterfaceInfoUpdateRequest implements Serializable {
      */
     private String method;
 
+    /**
+     * 接口调用所需接口币
+     */
+    private Long invokePrice;
+
     private static final long serialVersionUID = 1L;
 
 }

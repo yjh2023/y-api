@@ -9,13 +9,13 @@ import com.wind.common.ResultUtils;
 import com.wind.exception.BusinessException;
 import com.wind.model.enums.InterfaceInfoStatusEnum;
 import com.wind.model.request.interfaceInfo.InterfaceInfoAddRequest;
+import com.wind.model.request.interfaceInfo.InterfaceInfoInvokeRequest;
 import com.wind.model.request.interfaceInfo.InterfaceInfoQueryRequest;
 import com.wind.model.request.interfaceInfo.InterfaceInfoUpdateRequest;
 import com.wind.model.vo.UserVO;
 import com.wind.service.InterfaceInfoService;
 import com.wind.service.UserService;
 import com.wind.yapiclientsdk.client.YapiClient;
-import com.wind.yapiclientsdk.model.TestUser;
 import com.wind.yapicommon.model.domain.InterfaceInfo;
 import com.wind.yapicommon.model.domain.User;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 
@@ -256,15 +257,17 @@ public class InterfaceInfoController {
     /**
      * 测试调用
      *
-     * @param id
+     * @param interfaceInfoInvokeRequest
      * @param httpServletRequest
      * @return
      */
     @PostMapping("invoke")
-    public BaseResponse<Object> invokeInterface(Long id,HttpServletRequest httpServletRequest){
-        if(id == null || id <= 0){
+    public BaseResponse<Object> invokeInterface(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeRequest
+            , HttpServletRequest httpServletRequest){
+        if(interfaceInfoInvokeRequest == null || interfaceInfoInvokeRequest.getId() <= 0){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
+        Long id = interfaceInfoInvokeRequest.getId();
         InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
         if(interfaceInfo == null){
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
@@ -274,13 +277,19 @@ public class InterfaceInfoController {
         }
         UserVO loginUser = userService.getLoginUser(httpServletRequest);
         User user = userService.getById(loginUser.getId());
+        if(user.getBalance() < interfaceInfo.getInvokePrice()){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR,"余额不足");
+        }
         String accessKey = user.getAccessKey();
         String secretKey = user.getSecretKey();
         YapiClient yapiClient = new YapiClient(accessKey,secretKey);
-        TestUser testUser = new TestUser();
-        testUser.setUsername("wind");
-        String result = yapiClient.getUsernameByPost(testUser);
-        return ResultUtils.success(result);
-
+        String requestParams = interfaceInfoInvokeRequest.getRequestParams();
+        try {
+            Method method = YapiClient.class.getMethod(interfaceInfo.getName(),String.class);
+            String invoke =(String) method.invoke(yapiClient,requestParams);
+            return ResultUtils.success(invoke);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR);
+        }
     }
 }

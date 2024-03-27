@@ -4,19 +4,30 @@ import com.wind.yapiclientsdk.utils.SignUtils;
 import com.wind.yapicommon.model.domain.InterfaceInfo;
 import com.wind.yapicommon.model.domain.User;
 import com.wind.yapicommon.service.InnerInterfaceInfoService;
+import com.wind.yapicommon.service.InnerUserInterfaceInfoService;
 import com.wind.yapicommon.service.InnerUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.reactivestreams.Publisher;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 全局过滤
@@ -32,6 +43,9 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
 
     @DubboReference
     private InnerInterfaceInfoService innerInterfaceInfoService;
+
+    @DubboReference
+    private InnerUserInterfaceInfoService innerUserInterfaceInfoService;
 
     private static final String INTERFACE_HOST = "http://localhost:8082";
 
@@ -88,9 +102,59 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         if(invokeInterfaceInfo == null){
             return handleNoAuth(response);
         }
-        // todo 接口调用统计
-        log.info("custom global filter");
-        return chain.filter(exchange);
+        long interfaceInfoId = invokeInterfaceInfo.getId();
+        Long userId = invokeUser.getId();
+//        log.info("custom global filter");
+//        return chain.filter(exchange);
+        return handleResponse(exchange,chain,interfaceInfoId,userId);
+    }
+
+    private Mono<Void> handleResponse(ServerWebExchange exchange, GatewayFilterChain chain,long interfaceInfoId,long userId) {
+        try {
+            ServerHttpResponse originalResponse = exchange.getResponse();
+            DataBufferFactory bufferFactory = originalResponse.bufferFactory();
+            HttpStatus statusCode = originalResponse.getStatusCode();
+            if(statusCode == HttpStatus.OK){
+                ServerHttpResponseDecorator responseDecorator = new ServerHttpResponseDecorator(originalResponse){
+                    @Override
+                    public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
+                        log.info("body instanceof Flux: {}",(body instanceof Flux));
+                        if(body instanceof Flux){
+                            Flux<? extends DataBuffer> fluxBody = Flux.from(body);
+                            return super.writeWith(
+                                    fluxBody.map(dataBuffer -> {
+                                        // todo 接口调用统计
+                                        try {
+                                            innerUserInterfaceInfoService.invokeCount(interfaceInfoId,userId);
+                                        } catch (Exception e) {
+                                            log.error("invokeCount error",e);
+                                        }
+                                        byte[] content = new byte[dataBuffer.readableByteCount()];
+                                        dataBuffer.read(content);
+                                        DataBufferUtils.release(dataBuffer);
+                                        StringBuilder stringBuilder = new StringBuilder(200);
+                                        List<Object> rspArgs = new ArrayList<>();
+                                        rspArgs.add(originalResponse.getStatusCode());
+                                        String data = new String(content, StandardCharsets.UTF_8);
+                                        stringBuilder.append(data);
+                                        log.info("响应结果: " + data);
+                                        return bufferFactory.wrap(content);
+                                    })
+                            );
+                        } else {
+                            log.error("<-- {} 响应code异常",getStatusCode());
+                        }
+                        return super.writeWith(body);
+
+                    }
+                };
+                return chain.filter(exchange.mutate().response(responseDecorator).build());
+            }
+            return chain.filter(exchange);
+        } catch (Exception e) {
+            log.error("网关处理响应异常" + e);
+            return chain.filter(exchange);
+        }
     }
 
     private Mono<Void> handleNoAuth(ServerHttpResponse response) {

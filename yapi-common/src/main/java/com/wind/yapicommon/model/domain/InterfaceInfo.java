@@ -60,6 +60,11 @@ public class InterfaceInfo implements Serializable {
     private String method;
 
     /**
+     * 接口调用所需接口币
+     */
+    private Long invokePrice;
+
+    /**
      * 创建人
      */
     private Long userId;
