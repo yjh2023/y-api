@@ -202,6 +202,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      */
     @Override
     public boolean isAdmin(HttpServletRequest request){
+        if(request == null) return false;
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         UserVO currentUser = (UserVO) userObj;
         return currentUser != null && ADMIN_ROLE.equals(currentUser.getUserRole());

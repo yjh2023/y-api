@@ -5,19 +5,26 @@
 <mapper namespace="com.wind.mapper.UserInterfaceInfoMapper">
 
     <resultMap id="BaseResultMap" type="com.wind.yapicommon.model.domain.UserInterfaceInfo">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="userId" column="userId" jdbcType="BIGINT"/>
-            <result property="interfaceInfoId" column="interfaceInfoId" jdbcType="BIGINT"/>
-            <result property="totalNum" column="totalNum" jdbcType="INTEGER"/>
-            <result property="status" column="status" jdbcType="INTEGER"/>
-            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
-            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
-            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="userId" column="userId" jdbcType="BIGINT"/>
+        <result property="interfaceInfoId" column="interfaceInfoId" jdbcType="BIGINT"/>
+        <result property="totalNum" column="totalNum" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+        <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,userId,interfaceInfoId,
+        id
+        ,userId,interfaceInfoId,
         totalNum,status,
         createTime,updateTime,isDelete
     </sql>
+    <select id="listTopInvokeInterface" resultType="com.wind.yapicommon.model.domain.UserInterfaceInfo">
+        select interfaceInfoId, sum(totalNum) as totalNum
+        from user_interface_info
+        group by interfaceInfoId
+        order by totalNum desc limit #{limit}
+    </select>
 </mapper>

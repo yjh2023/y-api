@@ -39,7 +39,7 @@ public class ServiceController {
      */
     @GetMapping("/poisonousChickenSoup")
     public String getPoisonousChickenSoup() {
-        return RequestUtils.get("https://api.btstu.cn/yan/api.php?charset=utf-8&encode=json");// 真实的第三方接口地址
+        return RequestUtils.get("https://api.btstu.cn/yan/api.php");// 真实的第三方接口地址
     }
 
     /**
@@ -49,7 +49,7 @@ public class ServiceController {
      */
     @GetMapping("/loveTalk")
     public String randomLoveTalk() {
-        return RequestUtils.get("https://api.vvhan.com/api/love");
+        return RequestUtils.get("https://api.vvhan.com/api/text/love");
     }
 
     /**
